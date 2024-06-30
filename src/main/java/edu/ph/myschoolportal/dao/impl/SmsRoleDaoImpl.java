@@ -1,7 +1,7 @@
 package edu.ph.myschoolportal.dao.impl;
 
 import edu.ph.myschoolportal.dao.SmsRoleDao;
-import edu.ph.myschoolportal.model.SmsRole;
+import edu.ph.myschoolportal.model.entity.SmsRole;
 import edu.ph.myschoolportal.enums.IdPrefix;
 import edu.ph.myschoolportal.service.LoggingService;
 import edu.ph.myschoolportal.util.IdGenerator;

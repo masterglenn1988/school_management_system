@@ -1,4 +1,4 @@
-package edu.ph.myschoolportal.dto;
+package edu.ph.myschoolportal.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

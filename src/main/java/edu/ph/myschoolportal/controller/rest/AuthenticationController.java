@@ -1,12 +1,14 @@
-package edu.ph.myschoolportal.controller;
+package edu.ph.myschoolportal.controller.rest;
 
-import edu.ph.myschoolportal.model.ApiResponse;
-import edu.ph.myschoolportal.dto.LoginDto;
+import edu.ph.myschoolportal.model.common.RestApiResponse;
+import edu.ph.myschoolportal.dto.request.LoginDto;
 import edu.ph.myschoolportal.enums.HttpCode;
 import edu.ph.myschoolportal.exception.ServiceException;
 import edu.ph.myschoolportal.service.AuthenticationService;
 import edu.ph.myschoolportal.service.LoggingService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ import javax.validation.Valid;
 @Tag(name = "Authentication Controller")
 @RequestMapping(path = "/api/v1")
 @RequiredArgsConstructor
+@CrossOrigin
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
@@ -35,12 +38,19 @@ public class AuthenticationController {
      * @see #authenticate(LoginDto, HttpServletRequest)
      */
     @Operation(summary = "Login Account")
-    @PostMapping(path = "/login")
-    public ResponseEntity<ApiResponse> authenticate(@Valid @RequestBody LoginDto loginDto,  HttpServletRequest httpServletRequest) {
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
+    @PostMapping(path = "/auth")
+    public ResponseEntity<RestApiResponse> authenticate(@Valid @RequestBody LoginDto loginDto, HttpServletRequest httpServletRequest) {
         try{
-            ApiResponse response = authenticationService.authenticate(loginDto.getUsername(), loginDto.getPassword());
+            RestApiResponse response = authenticationService.authenticate(loginDto.getUsername(), loginDto.getPassword(), httpServletRequest.getRequestURL().toString());
             loggingService.info("", this.getClass().getSimpleName(), "", response.toString());
-            return new ResponseEntity<>(ApiResponse.apiSuccessResponse(
+            return new ResponseEntity<>(RestApiResponse.apiSuccessResponse(
                     response.getMessage(),
                     httpServletRequest.getRequestURI(),
                     HttpCode.OK.getValue()),
@@ -61,12 +71,19 @@ public class AuthenticationController {
      * @see #resetPassword(String, HttpServletRequest)
      */
     @Operation(summary = "Reset Password")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OK"),
+            @ApiResponse(responseCode = "400", description = "Bad Request"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "404", description = "Not Found"),
+            @ApiResponse(responseCode = "500", description = "Internal Server Error")
+    })
     @PostMapping(path = "/reset-password/{email}")
-    public ResponseEntity<ApiResponse> resetPassword(@PathVariable("email") String email, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<RestApiResponse> resetPassword(@PathVariable("email") String email, HttpServletRequest httpServletRequest) {
         try{
-            ApiResponse response = authenticationService.resetPassword(email);
+            RestApiResponse response = authenticationService.resetPassword(email);
             loggingService.info("", this.getClass().getSimpleName(), "", response.toString());
-            return new ResponseEntity<>(ApiResponse.apiSuccessResponse(
+            return new ResponseEntity<>(RestApiResponse.apiSuccessResponse(
                     response.getMessage(),
                     httpServletRequest.getRequestURI(),
                     HttpCode.OK.getValue()),

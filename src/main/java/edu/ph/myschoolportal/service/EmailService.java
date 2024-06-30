@@ -2,8 +2,8 @@ package edu.ph.myschoolportal.service;
 
 import edu.ph.myschoolportal.enums.HttpCode;
 import edu.ph.myschoolportal.exception.ServiceException;
-import edu.ph.myschoolportal.model.ApiResponse;
-import edu.ph.myschoolportal.model.Email;
+import edu.ph.myschoolportal.model.common.RestApiResponse;
+import edu.ph.myschoolportal.model.entity.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.MailException;
@@ -35,9 +35,9 @@ public class EmailService {
      * function. SimpleMailMessage Object is required because send() function uses
      * object of SimpleMailMessage as a Parameter
      */
-    public ApiResponse sendEmail(Email email) throws ServiceException {
+    public RestApiResponse sendEmail(Email email) throws ServiceException {
         loggingService.info("", this.getClass().getSimpleName(), "", "Email : " + email.toString());
-        ApiResponse apiResponse;
+        RestApiResponse restApiResponse;
         try{
             SimpleMailMessage mail = new SimpleMailMessage();
             mail.setTo(email.getTo());
@@ -46,13 +46,13 @@ public class EmailService {
             mail.setText(email.getBody());
             javaMailSender.send(mail);
 
-            apiResponse = ApiResponse.builder()
+            restApiResponse = RestApiResponse.builder()
                     .message(Collections.singletonList("Congratulations! Your mail has been sent to " + email.getTo()))
                     .build();
         }catch (MailException ex){
             throw new ServiceException(ex.getMessage(), HttpCode.UNAUTHORIZED.getValue());
         }
-        return apiResponse;
+        return restApiResponse;
     }
 
     /**

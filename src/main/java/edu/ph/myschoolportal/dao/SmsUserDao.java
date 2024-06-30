@@ -1,6 +1,6 @@
 package edu.ph.myschoolportal.dao;
 
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.model.entity.SmsUser;
 import edu.ph.myschoolportal.exception.DaoException;
 
 import java.util.List;

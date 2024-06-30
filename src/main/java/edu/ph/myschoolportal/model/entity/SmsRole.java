@@ -1,4 +1,4 @@
-package edu.ph.myschoolportal.model;
+package edu.ph.myschoolportal.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.AllArgsConstructor;

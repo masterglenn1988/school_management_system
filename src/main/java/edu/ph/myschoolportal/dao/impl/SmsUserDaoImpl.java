@@ -1,7 +1,7 @@
 package edu.ph.myschoolportal.dao.impl;
 
 import edu.ph.myschoolportal.dao.SmsUserDao;
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.model.entity.SmsUser;
 import edu.ph.myschoolportal.enums.HttpCode;
 import edu.ph.myschoolportal.enums.IdPrefix;
 import edu.ph.myschoolportal.exception.DaoException;

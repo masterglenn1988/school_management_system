@@ -2,9 +2,9 @@ package edu.ph.myschoolportal.service;
 
 import edu.ph.myschoolportal.dao.SmsRoleDao;
 import edu.ph.myschoolportal.dao.SmsUserDao;
-import edu.ph.myschoolportal.model.ApiResponse;
-import edu.ph.myschoolportal.model.SmsRole;
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.model.common.RestApiResponse;
+import edu.ph.myschoolportal.model.entity.SmsRole;
+import edu.ph.myschoolportal.model.entity.SmsUser;
 import edu.ph.myschoolportal.exception.DaoException;
 import edu.ph.myschoolportal.exception.ServiceException;
 import edu.ph.myschoolportal.util.BCryptUtility;
@@ -25,7 +25,7 @@ public class RegistrationService {
     private final BCryptUtility bCryptUtility;
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public ApiResponse registerAccount(SmsUser smsUser) throws ServiceException{
+    public RestApiResponse registerAccount(SmsUser smsUser) throws ServiceException{
         loggingService.info("", this.getClass().getSimpleName(), "", "SmsUser : " + smsUser.toString());
         try{
             SmsUser userCreated = SmsUser.smsUser(smsUser);
@@ -39,8 +39,8 @@ public class RegistrationService {
             throw new ServiceException(ex.getMessage(), ex.getStatus());
         }
 
-        ApiResponse apiResponse = new ApiResponse();
-        apiResponse.setMessage(Collections.singletonList(smsUser));
-        return apiResponse;
+        RestApiResponse restApiResponse = new RestApiResponse();
+        restApiResponse.setMessage(Collections.singletonList(smsUser));
+        return restApiResponse;
     }
 }

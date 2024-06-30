@@ -1,12 +1,15 @@
 package edu.ph.myschoolportal.service;
 
+import edu.ph.myschoolportal.component.UserAuthenticationProvider;
 import edu.ph.myschoolportal.config.EmailConfigProperties;
-import edu.ph.myschoolportal.model.ApiResponse;
-import edu.ph.myschoolportal.model.Email;
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.dto.response.LoginResponseDto;
 import edu.ph.myschoolportal.enums.HttpCode;
 import edu.ph.myschoolportal.enums.UserStatus;
 import edu.ph.myschoolportal.exception.ServiceException;
+import edu.ph.myschoolportal.model.common.RestApiResponse;
+import edu.ph.myschoolportal.model.entity.Email;
+import edu.ph.myschoolportal.model.entity.SmsRole;
+import edu.ph.myschoolportal.model.entity.SmsUser;
 import edu.ph.myschoolportal.repository.SmsUserRepository;
 import edu.ph.myschoolportal.util.BCryptUtility;
 import edu.ph.myschoolportal.util.CommonStringUtility;
@@ -15,7 +18,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +29,12 @@ public class AuthenticationService {
     private final LoggingService loggingService;
     private final EmailConfigProperties emailConfigProperties;
     private final EmailService emailService;
+    private final UserAuthenticationProvider userAuthenticationProvider;
     private final SmsUserRepository smsUserRepository;
     private final BCryptUtility encoder;
 
-    public ApiResponse authenticate(String username, String password) throws ServiceException {
-        ApiResponse apiResponse;
+    public RestApiResponse authenticate(String username, String password, String issuer) throws ServiceException {
+        RestApiResponse restApiResponse;
         loggingService.info("", this.getClass().getSimpleName(), "", "username : " + username + " password : " + password);
         SmsUser smsUser = smsUserRepository.findByUsername(username);
         if(!ObjectUtils.isEmpty(smsUser)){
@@ -36,8 +42,14 @@ public class AuthenticationService {
                 throw new ServiceException(CommonStringUtility.ERR_CODE_INACTIVE_SUSPENDED, HttpCode.UNAUTHORIZED.getValue());
             }else{
                 if(encoder.passwordMatches(password, smsUser.getPassword())){
-                    apiResponse = ApiResponse.builder()
-                            .message(Collections.singletonList(CommonStringUtility.SUCCESS_MSG_LOGGED_IN))
+                    List<String> rolesList = this.getRoles(smsUser.getSmsRole());
+
+                    restApiResponse = RestApiResponse.builder()
+                            .message(Collections.singletonList(LoginResponseDto.builder()
+                                    .username(username)
+                                    .message(CommonStringUtility.SUCCESS_MSG_LOGGED_IN)
+                                    .token(userAuthenticationProvider.createToken(smsUser, rolesList, issuer))
+                                    .build()))
                             .build();
                 }else{
                     if(smsUser.getAttempts() >= 3){
@@ -52,15 +64,23 @@ public class AuthenticationService {
                 }
             }
         }else{
-            throw new ServiceException(CommonStringUtility.ERR_CODE_LOGIN_USERNAME_NOT_CONNECTED, HttpCode.UNAUTHORIZED.getValue());
+            throw new ServiceException(CommonStringUtility.ERR_CODE_LOGIN_USERNAME_NOT_CONNECTED, HttpCode.NOT_FOUND.getValue());
         }
 
-        return apiResponse;
+        return restApiResponse;
     }
 
-    public ApiResponse resetPassword(String email) throws ServiceException {
+    private List<String> getRoles(List<SmsRole> roles){
+        List<String> rolesList = new ArrayList<>();
+        for(SmsRole role : roles){
+            rolesList.add(role.getUserRole());
+        }
+        return rolesList;
+    }
+
+    public RestApiResponse resetPassword(String email) throws ServiceException {
         loggingService.info("", this.getClass().getSimpleName(), "", "Email : " + email);
-        ApiResponse apiResponse;
+        RestApiResponse restApiResponse;
         try{
             String randomPass = ObjectUtils.randomPasswordGenerator(14);
             String encryptedPass = encoder.passwordEncoder(randomPass);
@@ -85,13 +105,13 @@ public class AuthenticationService {
                     .body("Here is your temporary password : " + randomPass)
                     .build());
 
-            apiResponse = ApiResponse.builder()
+            restApiResponse = RestApiResponse.builder()
                     .message(Collections.singletonList("Successfully reset your password!"))
                     .build();
         }catch(NoSuchAlgorithmException ex){
             throw new ServiceException(ex.getMessage(), HttpCode.INTERNAL_SERVER_ERROR.getValue());
         }
-        return apiResponse;
+        return restApiResponse;
     }
 
 }

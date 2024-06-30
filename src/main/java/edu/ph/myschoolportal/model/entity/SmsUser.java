@@ -1,4 +1,4 @@
-package edu.ph.myschoolportal.model;
+package edu.ph.myschoolportal.model.entity;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import edu.ph.myschoolportal.enums.UserStatus;
@@ -26,10 +26,10 @@ public class SmsUser implements Serializable {
     @Column(name = "user_id", nullable = false)
     private String userId;
 
-    @Column(name = "first_name")
+    @Column(name = "first_name", nullable = false)
     private String firstName;
 
-    @Column(name = "middle_name")
+    @Column(name = "middle_name", nullable = false)
     private String middleName;
 
     @Column(name = "last_name")

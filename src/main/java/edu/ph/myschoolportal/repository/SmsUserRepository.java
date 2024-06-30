@@ -1,6 +1,6 @@
 package edu.ph.myschoolportal.repository;
 
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.model.entity.SmsUser;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

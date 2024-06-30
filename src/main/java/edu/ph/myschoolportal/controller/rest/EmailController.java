@@ -1,15 +1,13 @@
-package edu.ph.myschoolportal.controller;
+package edu.ph.myschoolportal.controller.rest;
 
-import edu.ph.myschoolportal.model.ApiResponse;
-import edu.ph.myschoolportal.dto.SmsUserDto;
-import edu.ph.myschoolportal.model.SmsUser;
+import edu.ph.myschoolportal.dto.request.EmailDto;
 import edu.ph.myschoolportal.enums.HttpCode;
 import edu.ph.myschoolportal.exception.ServiceException;
+import edu.ph.myschoolportal.model.common.RestApiResponse;
+import edu.ph.myschoolportal.model.entity.Email;
+import edu.ph.myschoolportal.service.EmailService;
 import edu.ph.myschoolportal.service.LoggingService;
-import edu.ph.myschoolportal.service.RegistrationService;
-import edu.ph.myschoolportal.util.BCryptUtility;
 import edu.ph.myschoolportal.util.ObjectUtils;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -24,39 +22,37 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 @RestController
-@Tag(name = "Registration Controller")
+@Tag(name = "Email Controller")
 @RequestMapping(path = "/api/v1")
 @RequiredArgsConstructor
-public class RegistrationController {
+public class EmailController {
 
-    private final RegistrationService registrationService;
+    private final EmailService emailService;
     private final LoggingService loggingService;
-    private final BCryptUtility bCryptUtility;
 
     /** Returns a ApiResponse object if the user
-     * successfully register to the Student Management System web application
-     * @param smsUserDto smsUserDto
+     * successfully send an email message
+     * @param emailDto emailDto
      * @param httpServletRequest httpServletRequest
      * @throws ResponseStatusException ex
      * @return ApiResponse response
-     * @see #registerAccount(SmsUserDto, HttpServletRequest)
+     * @see #sendEmail(EmailDto, HttpServletRequest)
      */
-
-    @Operation(summary = "Register Account")
-    @PostMapping(path = "/register-account")
-    public ResponseEntity<ApiResponse> registerAccount(@Valid @RequestBody SmsUserDto smsUserDto, HttpServletRequest httpServletRequest){
-        try{
-            SmsUser smsUser = ObjectUtils.copyAs(smsUserDto, SmsUser.class);
-            ApiResponse response = registrationService.registerAccount(smsUser);
-            loggingService.info("", this.getClass().getSimpleName(), "", response.toString());
-            return new ResponseEntity<>(ApiResponse.apiSuccessResponse(
+    @PostMapping(value = "send-email")
+    public ResponseEntity<RestApiResponse> sendEmail(@Valid @RequestBody EmailDto emailDto, HttpServletRequest httpServletRequest) {
+        loggingService.info("", this.getClass().getSimpleName(), "", "EmailDto : " + emailDto.toString());
+        try {
+            Email email = ObjectUtils.copyAs(emailDto, Email.class);
+            RestApiResponse response = emailService.sendEmail(email);
+            return new ResponseEntity<>(RestApiResponse.apiSuccessResponse(
                     response.getMessage(),
                     httpServletRequest.getRequestURI(),
-                    HttpCode.CREATED.getValue()),
-                    HttpStatus.CREATED);
-        }catch(ServiceException ex){
+                    HttpCode.OK.getValue()),
+                    HttpStatus.OK);
+        } catch (ServiceException ex) {
             loggingService.error("", this.getClass().getSimpleName(), ex.getMessage(), ex.getStatus());
             throw new ResponseStatusException(ex.getStatus(), ex.getMessage(), ex);
         }
     }
+
 }
